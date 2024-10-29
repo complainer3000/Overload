@@ -17,6 +17,11 @@ struct Vector {
         return x || y || z;
     }
 
+    constexpr auto IsValid() const noexcept
+    {
+        return x || y || z;
+    }
+
     friend constexpr auto operator==(const Vector& a, const Vector& b) noexcept
     {
         return a.x == b.x && a.y == b.y && a.z == b.z;

@@ -24,7 +24,7 @@
 #include <Interfaces/ClientInterfaces.h>
 #include <Interfaces/OtherInterfaces.h>
 
-csgo::Vector Aimbot::calculateRelativeAngle(csgo::Vector& source, csgo::Vector& destination, csgo::Vector& viewAngles) noexcept
+csgo::Vector Aimbot::calculateRelativeAngle(csgo::Vector& source, csgo::Vector& destination, const csgo::Vector& viewAngles) noexcept
 {
     return ((destination - source).toAngle() - viewAngles).normalize();
 }
@@ -183,7 +183,7 @@ void Aimbot::run(Misc& misc, const EngineInterfaces& engineInterfaces, const Cli
 
         auto bestFov = config.aimbot[weaponIndex].fov;
         csgo::Vector bestTarget{ };
-        const auto localPlayerEyePosition = localPlayer.get().getEyePosition();
+        auto localPlayerEyePosition = localPlayer.get().getEyePosition();
 
         const auto aimPunch = activeWeapon.requiresRecoilControl() ? localPlayer.get().getAimPunch() : csgo::Vector{ };
 
@@ -194,7 +194,7 @@ void Aimbot::run(Misc& misc, const EngineInterfaces& engineInterfaces, const Cli
                 continue;
 
             for (auto bone : { 8, 4, 3, 7, 6, 5 }) {
-                const auto bonePosition = entity.getBonePosition(config.aimbot[weaponIndex].bone > 1 ? 10 - config.aimbot[weaponIndex].bone : bone);
+                auto bonePosition = entity.getBonePosition(config.aimbot[weaponIndex].bone > 1 ? 10 - config.aimbot[weaponIndex].bone : bone);
                 const auto angle = calculateRelativeAngle(localPlayerEyePosition, bonePosition, cmd->viewangles + aimPunch);
                 
                 const auto fov = std::hypot(angle.x, angle.y);
@@ -216,7 +216,7 @@ void Aimbot::run(Misc& misc, const EngineInterfaces& engineInterfaces, const Cli
             }
         }
 
-        if (bestTarget.notNull()) {
+        if (bestTarget.IsValid()) {
             static csgo::Vector lastAngles{ cmd->viewangles };
             static int lastCommand{ };
 
