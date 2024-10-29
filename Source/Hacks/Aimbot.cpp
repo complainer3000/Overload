@@ -24,7 +24,7 @@
 #include <Interfaces/ClientInterfaces.h>
 #include <Interfaces/OtherInterfaces.h>
 
-csgo::Vector Aimbot::calculateRelativeAngle(const csgo::Vector& source, const csgo::Vector& destination, const csgo::Vector& viewAngles) noexcept
+csgo::Vector Aimbot::calculateRelativeAngle(csgo::Vector& source, csgo::Vector& destination, csgo::Vector& viewAngles) noexcept
 {
     return ((destination - source).toAngle() - viewAngles).normalize();
 }
