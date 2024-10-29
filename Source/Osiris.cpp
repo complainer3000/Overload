@@ -2,7 +2,7 @@
 
 #include "Platform/Macros/IsPlatform.h"
 
-#if IS_WIN32() || IS_WIN64()
+#if IS_WIN32
 #include <bit>
 #include <clocale>
 #include <Windows.h>
