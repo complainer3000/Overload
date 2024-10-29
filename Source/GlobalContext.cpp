@@ -178,7 +178,7 @@ void GlobalContext::initialize()
 
     randomGenerator.emplace();
     features.emplace(createFeatures(*memory, ClientInterfaces{ retSpoofGadgets->client, *clientInterfaces }, getEngineInterfaces(), getOtherInterfaces(), ClientPatternFinder{ clientPatternFinder }, EnginePatternFinder{ enginePatternFinder }, *randomGenerator));
-    config.emplace(*features, getOtherInterfaces(), *memory);
+    config = std::make_unique<Config>(*features, getOtherInterfaces(), *memory);
     features->chams.setModelRenderHooks(&hooks->modelRenderHooks);
 
     gui.emplace();

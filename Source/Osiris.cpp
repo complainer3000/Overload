@@ -63,7 +63,7 @@ BOOL APIENTRY DllEntryPoint(HMODULE moduleHandle, DWORD reason, LPVOID reserved)
 
 win::Peb* WindowsPlatformApi::getPeb() noexcept
 {
-    static_assert(IS_WIN32() || IS_WIN64());
+    static_assert(IS_WIN32);
 #if IS_WIN32()
     return std::bit_cast<win::Peb*>(__readfsdword(0x30));
 #elif IS_WIN64()

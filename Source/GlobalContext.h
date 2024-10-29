@@ -84,7 +84,6 @@ public:
 
     GlobalContextState state = GlobalContextState::NotInitialized;
 
-    std::optional<Config> config;
     std::optional<ClientInterfacesPODs> clientInterfaces;
     std::optional<const OtherInterfacesPODs> interfaces;
     std::optional<Helpers::RandomGenerator> randomGenerator;

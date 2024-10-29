@@ -119,3 +119,5 @@ private:
     std::vector<std::u8string> configs;
     Features& features;
 };
+
+inline std::unique_ptr<Config> config;

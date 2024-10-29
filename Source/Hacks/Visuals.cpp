@@ -8,12 +8,12 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui_internal.h>
 
-#include "../ConfigStructs.h"
+#include "ConfigStructs.h"
 #include <fnv.h>
-#include "../GameData.h"
-#include "../Helpers.h"
-#include "../Memory.h"
-#include "../imguiCustom.h"
+#include "GameData.h"
+#include "Helpers.h"
+#include "Memory.h"
+#include "imguiCustom.h"
 #include "Visuals.h"
 
 #include <CSGO/PODs/ConVar.h>

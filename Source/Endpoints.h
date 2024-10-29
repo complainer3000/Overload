@@ -157,7 +157,7 @@ HRESULT __stdcall present(IDirect3DDevice9* device, const RECT* src, const RECT*
 {
     [[maybe_unused]] static bool imguiInit{ ImGui_ImplDX9_Init(device) };
 
-    if (globalContext->config->loadScheduledFonts())
+    if (config->loadScheduledFonts())
         ImGui_ImplDX9_DestroyFontsTexture();
 
     ImGui_ImplDX9_NewFrame();
@@ -225,8 +225,8 @@ bool FASTCALL_CONV ClientModeHooks::createMove(FASTCALL_THIS(csgo::ClientMode* t
 
     EnginePrediction::run(ClientInterfaces{ retSpoofGadgets->client, *globalContext->clientInterfaces }, *globalContext->memory, cmd);
 
-    features->aimbot.run(features->misc, globalContext->getEngineInterfaces(), ClientInterfaces{ retSpoofGadgets->client, *globalContext->clientInterfaces }, globalContext->getOtherInterfaces(), *globalContext->config, *globalContext->memory, cmd);
-    Triggerbot::run(globalContext->getEngineInterfaces().engineTrace(), globalContext->getOtherInterfaces(), *globalContext->memory, *globalContext->config, cmd);
+    features->aimbot.run(features->misc, globalContext->getEngineInterfaces(), ClientInterfaces{ retSpoofGadgets->client, *globalContext->clientInterfaces }, globalContext->getOtherInterfaces(), *config, *globalContext->memory, cmd);
+    Triggerbot::run(globalContext->getEngineInterfaces().engineTrace(), globalContext->getOtherInterfaces(), *globalContext->memory, *config, cmd);
     features->backtrack.run(ClientInterfaces{ retSpoofGadgets->client, *globalContext->clientInterfaces }, globalContext->getEngineInterfaces(), globalContext->getOtherInterfaces(), *globalContext->memory, cmd);
     features->misc.edgejump(cmd);
     features->misc.moonwalk(cmd);

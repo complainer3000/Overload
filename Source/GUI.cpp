@@ -35,6 +35,13 @@
 
 #include "Hooks.h"
 
+#define DRAGNDROP_HINT(l) \
+{ \
+	ImGui::ButtonEx("cfg", {}, ImGuiButtonFlags_Disabled); \
+	ImGui::SameLine(); \
+	ImGui::TextUnformatted(l); \
+}
+
 constexpr auto windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
 | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
@@ -101,18 +108,18 @@ void GUI::render(Hooks& hooks, const EngineInterfaces& engineInterfaces, const C
     auto& features = config.getFeatures();
     if (!config.style.menuStyle) {
         renderMenuBar(features);
-        renderAimbotWindow(config);
-        renderTriggerbotWindow(config);
+        renderAimbotWindow();
+        renderTriggerbotWindow();
         features.backtrack.drawGUI(false);
         features.glow.drawGUI(false);
-        renderChamsWindow(config);
-        StreamProofESP::drawGUI(config, false);
+        renderChamsWindow();
+        StreamProofESP::drawGUI(false);
         features.visuals.drawGUI(false);
         features.inventoryChanger.drawGUI(memory, false);
         features.sound.drawGUI(false);
-        renderStyleWindow(config);
+        renderStyleWindow();
         features.misc.drawGUI(features.visuals, features.inventoryChanger, features.glow, false);
-        renderConfigWindow(interfaces, memory, config);
+        renderConfigWindow(interfaces, memory);
     } else {
         renderGuiStyle2(engineInterfaces, clientInterfaces, interfaces, memory, config);
     }
@@ -122,9 +129,9 @@ void GUI::render(Hooks& hooks, const EngineInterfaces& engineInterfaces, const C
     }
 }
 
-void GUI::updateColors(Config& config) const noexcept
+void GUI::updateColors() const noexcept
 {
-    switch (config.style.menuColors) {
+    switch (config->style.menuColors) {
     case 0: ImGui::StyleColorsDark(); break;
     case 1: ImGui::StyleColorsLight(); break;
     case 2: ImGui::StyleColorsClassic(); break;
@@ -155,8 +162,9 @@ static void menuBarItem(const char* name, bool& enabled) noexcept
 void GUI::renderMenuBar(Features& features) noexcept
 {
     if (ImGui::BeginMainMenuBar()) {
-        menuBarItem("Aimbot", window.aimbot);
+        menuBarItem("Legitbot", window.aimbot);
         menuBarItem("Triggerbot", window.triggerbot);
+        menuBarItem("Ragebot", window.ragebot);
         features.backtrack.menuBarItem();
         features.glow.menuBarItem();
         menuBarItem("Chams", window.chams);
@@ -171,7 +179,7 @@ void GUI::renderMenuBar(Features& features) noexcept
     }
 }
 
-void GUI::renderAimbotWindow(Config& config, bool contentOnly) noexcept
+void GUI::renderAimbotWindow(bool contentOnly) noexcept
 {
     if (!contentOnly) {
         if (!window.aimbot)
@@ -179,15 +187,15 @@ void GUI::renderAimbotWindow(Config& config, bool contentOnly) noexcept
         ImGui::SetNextWindowSize({ 600.0f, 0.0f });
         ImGui::Begin("Aimbot", &window.aimbot, windowFlags);
     }
-    ImGui::Checkbox("On key", &config.aimbotOnKey);
+    ImGui::Checkbox("On key", &config->aimbotOnKey);
     ImGui::SameLine();
     ImGui::PushID("Aimbot Key");
-    ImGui::hotkey("", config.aimbotKey);
+    ImGui::hotkey("", config->aimbotKey);
     ImGui::PopID();
     ImGui::SameLine();
     ImGui::PushID(2);
     ImGui::PushItemWidth(70.0f);
-    ImGui::Combo("", &config.aimbotKeyMode, "Hold\0Toggle\0");
+    ImGui::Combo("", &config->aimbotKeyMode, "Hold\0Toggle\0");
     ImGui::PopItemWidth();
     ImGui::PopID();
     ImGui::Separator();
@@ -280,35 +288,35 @@ void GUI::renderAimbotWindow(Config& config, bool contentOnly) noexcept
     }
     ImGui::PopID();
     ImGui::SameLine();
-    ImGui::Checkbox("Enabled", &config.aimbot[currentWeapon].enabled);
+    ImGui::Checkbox("Enabled", &config->aimbot[currentWeapon].enabled);
     ImGui::Columns(2, nullptr, false);
     ImGui::SetColumnOffset(1, 220.0f);
-    ImGui::Checkbox("Aimlock", &config.aimbot[currentWeapon].aimlock);
-    ImGui::Checkbox("Silent", &config.aimbot[currentWeapon].silent);
-    ImGui::Checkbox("Friendly fire", &config.aimbot[currentWeapon].friendlyFire);
-    ImGui::Checkbox("Visible only", &config.aimbot[currentWeapon].visibleOnly);
-    ImGui::Checkbox("Scoped only", &config.aimbot[currentWeapon].scopedOnly);
-    ImGui::Checkbox("Ignore flash", &config.aimbot[currentWeapon].ignoreFlash);
-    ImGui::Checkbox("Ignore smoke", &config.aimbot[currentWeapon].ignoreSmoke);
-    ImGui::Checkbox("Auto shot", &config.aimbot[currentWeapon].autoShot);
-    ImGui::Checkbox("Auto scope", &config.aimbot[currentWeapon].autoScope);
-    ImGui::Combo("Bone", &config.aimbot[currentWeapon].bone, "Nearest\0Best damage\0Head\0Neck\0Sternum\0Chest\0Stomach\0Pelvis\0");
+    ImGui::Checkbox("Aimlock", &config->aimbot[currentWeapon].aimlock);
+    ImGui::Checkbox("Silent", &config->aimbot[currentWeapon].silent);
+    ImGui::Checkbox("Friendly fire", &config->aimbot[currentWeapon].friendlyFire);
+    ImGui::Checkbox("Visible only", &config->aimbot[currentWeapon].visibleOnly);
+    ImGui::Checkbox("Scoped only", &config->aimbot[currentWeapon].scopedOnly);
+    ImGui::Checkbox("Ignore flash", &config->aimbot[currentWeapon].ignoreFlash);
+    ImGui::Checkbox("Ignore smoke", &config->aimbot[currentWeapon].ignoreSmoke);
+    ImGui::Checkbox("Auto shot", &config->aimbot[currentWeapon].autoShot);
+    ImGui::Checkbox("Auto scope", &config->aimbot[currentWeapon].autoScope);
+    ImGui::Combo("Bone", &config->aimbot[currentWeapon].bone, "Nearest\0Best damage\0Head\0Neck\0Sternum\0Chest\0Stomach\0Pelvis\0");
     ImGui::NextColumn();
     ImGui::PushItemWidth(240.0f);
-    ImGui::SliderFloat("Fov", &config.aimbot[currentWeapon].fov, 0.0f, 255.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
-    ImGui::SliderFloat("Smooth", &config.aimbot[currentWeapon].smooth, 1.0f, 100.0f, "%.2f");
-    ImGui::SliderFloat("Max aim inaccuracy", &config.aimbot[currentWeapon].maxAimInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
-    ImGui::SliderFloat("Max shot inaccuracy", &config.aimbot[currentWeapon].maxShotInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
-    ImGui::InputInt("Min damage", &config.aimbot[currentWeapon].minDamage);
-    config.aimbot[currentWeapon].minDamage = std::clamp(config.aimbot[currentWeapon].minDamage, 0, 250);
-    ImGui::Checkbox("Killshot", &config.aimbot[currentWeapon].killshot);
-    ImGui::Checkbox("Between shots", &config.aimbot[currentWeapon].betweenShots);
+    ImGui::SliderFloat("Fov", &config->aimbot[currentWeapon].fov, 0.0f, 255.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+    ImGui::SliderFloat("Smooth", &config->aimbot[currentWeapon].smooth, 1.0f, 100.0f, "%.2f");
+    ImGui::SliderFloat("Max aim inaccuracy", &config->aimbot[currentWeapon].maxAimInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
+    ImGui::SliderFloat("Max shot inaccuracy", &config->aimbot[currentWeapon].maxShotInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
+    ImGui::InputInt("Min damage", &config->aimbot[currentWeapon].minDamage);
+    config->aimbot[currentWeapon].minDamage = std::clamp(config->aimbot[currentWeapon].minDamage, 0, 250);
+    ImGui::Checkbox("Killshot", &config->aimbot[currentWeapon].killshot);
+    ImGui::Checkbox("Between shots", &config->aimbot[currentWeapon].betweenShots);
     ImGui::Columns(1);
     if (!contentOnly)
         ImGui::End();
 }
 
-void GUI::renderTriggerbotWindow(Config& config, bool contentOnly) noexcept
+void GUI::renderTriggerbotWindow(bool contentOnly) noexcept
 {
     if (!contentOnly) {
         if (!window.triggerbot)
@@ -409,27 +417,271 @@ void GUI::renderTriggerbotWindow(Config& config, bool contentOnly) noexcept
     }
     ImGui::PopID();
     ImGui::SameLine();
-    ImGui::Checkbox("Enabled", &config.triggerbot[currentWeapon].enabled);
+    ImGui::Checkbox("Enabled", &config->triggerbot[currentWeapon].enabled);
     ImGui::Separator();
-    ImGui::hotkey("Hold Key", config.triggerbotHoldKey);
-    ImGui::Checkbox("Friendly fire", &config.triggerbot[currentWeapon].friendlyFire);
-    ImGui::Checkbox("Scoped only", &config.triggerbot[currentWeapon].scopedOnly);
-    ImGui::Checkbox("Ignore flash", &config.triggerbot[currentWeapon].ignoreFlash);
-    ImGui::Checkbox("Ignore smoke", &config.triggerbot[currentWeapon].ignoreSmoke);
+    ImGui::hotkey("Hold Key", config->triggerbotHoldKey);
+    ImGui::Checkbox("Friendly fire", &config->triggerbot[currentWeapon].friendlyFire);
+    ImGui::Checkbox("Scoped only", &config->triggerbot[currentWeapon].scopedOnly);
+    ImGui::Checkbox("Ignore flash", &config->triggerbot[currentWeapon].ignoreFlash);
+    ImGui::Checkbox("Ignore smoke", &config->triggerbot[currentWeapon].ignoreSmoke);
     ImGui::SetNextItemWidth(85.0f);
-    ImGui::Combo("Hitgroup", &config.triggerbot[currentWeapon].hitgroup, "All\0Head\0Chest\0Stomach\0Left arm\0Right arm\0Left leg\0Right leg\0");
+    ImGui::Combo("Hitgroup", &config->triggerbot[currentWeapon].hitgroup, "All\0Head\0Chest\0Stomach\0Left arm\0Right arm\0Left leg\0Right leg\0");
     ImGui::PushItemWidth(220.0f);
-    ImGui::SliderInt("Shot delay", &config.triggerbot[currentWeapon].shotDelay, 0, 250, "%d ms");
-    ImGui::InputInt("Min damage", &config.triggerbot[currentWeapon].minDamage);
-    config.triggerbot[currentWeapon].minDamage = std::clamp(config.triggerbot[currentWeapon].minDamage, 0, 250);
-    ImGui::Checkbox("Killshot", &config.triggerbot[currentWeapon].killshot);
-    ImGui::SliderFloat("Burst Time", &config.triggerbot[currentWeapon].burstTime, 0.0f, 0.5f, "%.3f s");
+    ImGui::SliderInt("Shot delay", &config->triggerbot[currentWeapon].shotDelay, 0, 250, "%d ms");
+    ImGui::InputInt("Min damage", &config->triggerbot[currentWeapon].minDamage);
+    config->triggerbot[currentWeapon].minDamage = std::clamp(config->triggerbot[currentWeapon].minDamage, 0, 250);
+    ImGui::Checkbox("Killshot", &config->triggerbot[currentWeapon].killshot);
+    ImGui::SliderFloat("Burst Time", &config->triggerbot[currentWeapon].burstTime, 0.0f, 0.5f, "%.3f s");
 
     if (!contentOnly)
         ImGui::End();
 }
 
-void GUI::renderChamsWindow(Config& config, bool contentOnly) noexcept
+void GUI::renderRagebotWindow(bool contentOnly) noexcept {}
+
+//void GUI::renderRagebotWindow(bool contentOnly) noexcept
+//{
+//    if (!window.aimbot)
+//        return;
+//    ImGui::Begin("Aimbot", &window.aimbot, windowFlags);
+//
+//    static int currentWeapon = 0;
+//
+//    if (ImGui::BeginListBox("##category", { 140, 260 }))
+//    {
+//        constexpr auto dragDrop = [](Config::Aimbot& cfg) noexcept
+//            {
+//                if (ImGui::BeginDragDropSource())
+//                {
+//                    ImGui::SetDragDropPayload("Aimbot", &cfg, sizeof(Config::Aimbot), ImGuiCond_Once);
+//                    DRAGNDROP_HINT("Aimbot")
+//                        ImGui::EndDragDropSource();
+//                }
+//
+//                if (ImGui::BeginDragDropTarget())
+//                {
+//                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Aimbot"))
+//                    {
+//                        const auto& data = *(Config::Aimbot*)payload->Data;
+//                        cfg = data;
+//                    }
+//
+//                    ImGui::EndDragDropTarget();
+//                }
+//            };
+//
+//        constexpr std::array categories = { "All (Other)", "Pistols", "Heavy", "SMG", "Rifles", "Zeus x27" };
+//
+//        for (std::size_t i = 0; i < categories.size(); ++i)
+//        {
+//            switch (i)
+//            {
+//            case 0:
+//                if (ImGui::Selectable(categories[i], currentWeapon == 0))
+//                    currentWeapon = 0;
+//
+//                dragDrop(config->aimbot[0]);
+//
+//                break;
+//            case 5:
+//                if (ImGui::Selectable(categories[i], currentWeapon == 39))
+//                    currentWeapon = 39;
+//
+//                dragDrop(config->aimbot[39]);
+//
+//                break;
+//            case 1:
+//                if (ImGui::Selectable(categories[i], currentWeapon == 35))
+//                    currentWeapon = 35;
+//
+//                dragDrop(config->aimbot[35]);
+//
+//                {
+//                    constexpr std::array pistols = { "Glock-18", "P2000", "USP-S", "Dual Berettas", "P250", "Tec-9", "Five-SeveN", "CZ-75", "Desert Eagle", "R8 Revolver" };
+//
+//                    ImGui::Indent();
+//
+//                    for (std::size_t j = 0; j < pistols.size(); ++j)
+//                    {
+//                        if (config->aimbot[35].bind.keyMode && !config->aimbot[j + 1].bind.keyMode)
+//                            continue;
+//
+//                        if (ImGui::Selectable(pistols[j], currentWeapon == j + 1))
+//                            currentWeapon = j + 1;
+//
+//                        dragDrop(config->aimbot[j + 1]);
+//                    }
+//
+//                    ImGui::Unindent();
+//                }
+//                break;
+//            case 2:
+//                if (ImGui::Selectable(categories[i], currentWeapon == 36))
+//                    currentWeapon = 36;
+//
+//                dragDrop(config->aimbot[36]);
+//
+//                {
+//                    constexpr std::array heavies = { "Nova", "XM1014", "Sawed-Off", "MAG-7", "M249", "Negev" };
+//
+//                    ImGui::Indent();
+//
+//                    for (std::size_t j = 0; j < heavies.size(); ++j)
+//                    {
+//                        if (config->aimbot[36].bind.keyMode && !config->aimbot[j + 11].bind.keyMode)
+//                            continue;
+//
+//                        if (ImGui::Selectable(heavies[j], currentWeapon == j + 11))
+//                            currentWeapon = j + 11;
+//
+//                        dragDrop(config->aimbot[j + 11]);
+//                    }
+//
+//                    ImGui::Unindent();
+//                }
+//                break;
+//            case 3:
+//                if (ImGui::Selectable(categories[i], currentWeapon == 37))
+//                    currentWeapon = 37;
+//
+//                dragDrop(config->aimbot[37]);
+//
+//                {
+//                    constexpr std::array smgs = { "Mac-10", "MP9", "MP7", "MP5-SD", "UMP-45", "P90", "PP-Bizon" };
+//
+//                    ImGui::Indent();
+//
+//                    for (std::size_t j = 0; j < smgs.size(); ++j)
+//                    {
+//                        if (config->aimbot[37].bind.keyMode && !config->aimbot[j + 17].bind.keyMode)
+//                            continue;
+//
+//                        if (ImGui::Selectable(smgs[j], currentWeapon == j + 17))
+//                            currentWeapon = j + 17;
+//
+//                        dragDrop(config->aimbot[j + 17]);
+//                    }
+//
+//                    ImGui::Unindent();
+//                }
+//                break;
+//            case 4:
+//                if (ImGui::Selectable(categories[i], currentWeapon == 38))
+//                    currentWeapon = 38;
+//
+//                dragDrop(config->aimbot[38]);
+//
+//                {
+//                    constexpr std::array rifles = { "Galil AR", "Famas", "AK-47", "M4A4", "M4A1-S", "SSG-08", "SG-553", "AUG", "AWP", "G3SG1", "SCAR-20" };
+//
+//                    ImGui::Indent();
+//
+//                    for (std::size_t j = 0; j < rifles.size(); ++j)
+//                    {
+//                        if (config->aimbot[38].bind.keyMode && !config->aimbot[j + 24].bind.keyMode)
+//                            continue;
+//
+//                        if (ImGui::Selectable(rifles[j], currentWeapon == j + 24))
+//                            currentWeapon = j + 24;
+//
+//                        dragDrop(config->aimbot[j + 24]);
+//                    }
+//
+//                    ImGui::Unindent();
+//                }
+//                break;
+//            }
+//        }
+//
+//        ImGui::EndListBox();
+//    }
+//
+//    ImGui::SameLine();
+//
+//    if (ImGui::BeginChild("##child", { 330, 0 }, false, ImGuiWindowFlags_NoScrollbar))
+//    {
+//        ImGuiCustom::keyBind("Enabled", config->aimbot[currentWeapon].bind);
+//
+//        ImGui::Separator();
+//        ImGui::Columns(2, nullptr, false);
+//        ImGui::SetColumnWidth(0, 150);
+//
+//        ImGui::Checkbox("Aimlock", &config->aimbot[currentWeapon].aimlock);
+//        ImGui::Checkbox("Silent", &config->aimbot[currentWeapon].silent);
+//        ImGui::Checkbox("Friendly fire", &config->aimbot[currentWeapon].friendlyFire);
+//        ImGui::Checkbox("Visible only", &config->aimbot[currentWeapon].visibleOnly);
+//        ImGui::Checkbox("Scoped only", &config->aimbot[currentWeapon].scopedOnly);
+//        ImGui::Checkbox("Ignore flash", &config->aimbot[currentWeapon].ignoreFlash);
+//        ImGui::Checkbox("Ignore smoke", &config->aimbot[currentWeapon].ignoreSmoke);
+//        ImGui::Checkbox("Auto shoot", &config->aimbot[currentWeapon].autoShoot);
+//        ImGui::Checkbox("Auto scope", &config->aimbot[currentWeapon].autoScope);
+//        ImGui::Checkbox("Auto slowwalk", &config->aimbot[currentWeapon].autoStop);
+//
+//        ImGui::SetNextItemWidth(80);
+//        ImGui::Combo("Targeting", &config->aimbot[currentWeapon].targeting, "FOV\0Damage\0Hitchance\0Distance\0");
+//        ImGui::SetNextItemWidth(80);
+//        ImGuiCustom::multiCombo("Hit group", config->aimbot[currentWeapon].hitGroup, "Head\0Chest\0Stomach\0Left arm\0Right arm\0Left leg\0Right leg\0");
+//
+//        ImGui::NextColumn();
+//
+//        ImGui::Checkbox("Multipoint", &config->aimbot[currentWeapon].multipoint);
+//
+//        ImGui::PushItemWidth(-1);
+//        ImGui::SliderFloat("##scale", &config->aimbot[currentWeapon].multipointScale, 0.5f, 1.0f, "Multipoint scale %.5f");
+//        ImGui::SliderFloat("##fov", &config->aimbot[currentWeapon].fov, 0.0f, 255.0f, "FOV %.2fdeg", ImGuiSliderFlags_Logarithmic);
+//        ImGui::SliderFloat("##hitchance", &config->aimbot[currentWeapon].hitchance, 0.0f, 100.0f, "Hitchance %.0f%%");
+//        ImGui::SetNextItemWidth(90);
+//        ImGui::InputFloat("Distance", &config->aimbot[currentWeapon].distance, 1.0f, 10.0f, "%.0fu");
+//        config->aimbot[currentWeapon].distance = std::max(config->aimbot[currentWeapon].distance, 0.0f);
+//
+//        ImGui::SliderInt("##mindmg", &config->aimbot[currentWeapon].minDamage, 0, 110, "Min damage %d");
+//        config->aimbot[currentWeapon].minDamage = std::max(config->aimbot[currentWeapon].minDamage, 0);
+//        ImGui::SliderInt("##mindmg_aw", &config->aimbot[currentWeapon].minDamageAutoWall, 0, 110, "Min damage auto-wall %d");
+//        config->aimbot[currentWeapon].minDamageAutoWall = std::max(config->aimbot[currentWeapon].minDamageAutoWall, 0);
+//
+//        ImGuiCustom::keyBind("Override", config->aimbot[currentWeapon].aimbotOverride.bind);
+//        if (ImGuiCustom::arrowButtonPopup("override"))
+//        {
+//            ImGui::SetNextItemWidth(80);
+//            ImGui::Combo("Targeting", &config->aimbot[currentWeapon].aimbotOverride.targeting, "FOV\0Damage\0Hitchance\0Distance\0");
+//            ImGui::SetNextItemWidth(80);
+//            ImGuiCustom::multiCombo("Hit group", config->aimbot[currentWeapon].aimbotOverride.hitGroup, "Head\0Chest\0Stomach\0Left arm\0Right arm\0Left leg\0Right leg\0");
+//
+//            ImGui::SliderFloat("##scale", &config->aimbot[currentWeapon].aimbotOverride.multipointScale, 0.5f, 1.0f, "Multipoint scale %.5f");
+//            ImGui::SliderFloat("##fov", &config->aimbot[currentWeapon].aimbotOverride.fov, 0.0f, 255.0f, "FOV %.2fdeg", ImGuiSliderFlags_Logarithmic);
+//            ImGui::SliderFloat("##hitchance", &config->aimbot[currentWeapon].aimbotOverride.hitchance, 0.0f, 100.0f, "Hitchance %.0f%%");
+//            ImGui::SetNextItemWidth(90);
+//            ImGui::InputFloat("Distance", &config->aimbot[currentWeapon].aimbotOverride.distance, 1.0f, 10.0f, "%.0fu");
+//            config->aimbot[currentWeapon].distance = std::max(config->aimbot[currentWeapon].aimbotOverride.distance, 0.0f);
+//            ImGui::SliderInt("##mindmg", &config->aimbot[currentWeapon].aimbotOverride.minDamage, 0, 100, "Min damage %d");
+//            config->aimbot[currentWeapon].aimbotOverride.minDamage = std::max(config->aimbot[currentWeapon].aimbotOverride.minDamage, 0);
+//            ImGui::SliderInt("##mindmg_aw", &config->aimbot[currentWeapon].aimbotOverride.minDamageAutoWall, 0, 100, "Min damage auto-wall %d");
+//            config->aimbot[currentWeapon].aimbotOverride.minDamageAutoWall = std::max(config->aimbot[currentWeapon].aimbotOverride.minDamageAutoWall, 0);
+//            ImGui::EndPopup();
+//        }
+//
+//        ImGui::SetNextItemWidth(100);
+//        ImGui::Checkbox("Mimic mouse movement", &config->aimbot[currentWeapon].humanize);
+//        if (ImGuiCustom::arrowButtonPopup("humanize"))
+//        {
+//            ImGui::SliderFloat("##acceleration", &config->aimbot[currentWeapon].acceleration, 0.0f, 5.0f, "Acceleration %.3fdeg/tick^2", ImGuiSliderFlags_Logarithmic);
+//            ImGui::SliderFloat("##friction", &config->aimbot[currentWeapon].friction, 1.0f, 5.0f, "Friction %.3f", ImGuiSliderFlags_Logarithmic);
+//            config->aimbot[currentWeapon].friction = std::fmaxf(1.0f, config->aimbot[currentWeapon].friction);
+//            ImGui::EndPopup();
+//        }
+//
+//        ImGui::SliderFloat("#rcsH", &config->aimbot[currentWeapon].recoilReductionH, 0.0f, 100.0f, "RCS horizontal %.1f%%");
+//        ImGui::SliderFloat("#rcsV", &config->aimbot[currentWeapon].recoilReductionV, 0.0f, 100.0f, "RCS vertical %.1f%%");
+//
+//        ImGui::Checkbox("Between shots", &config->aimbot[currentWeapon].betweenShots);
+//    }
+//
+//    ImGui::EndChild();
+//
+//    ImGui::End();
+//}
+
+void GUI::renderChamsWindow(bool contentOnly) noexcept
 {
     if (!contentOnly) {
         if (!window.chams)
@@ -438,8 +690,8 @@ void GUI::renderChamsWindow(Config& config, bool contentOnly) noexcept
         ImGui::Begin("Chams", &window.chams, windowFlags);
     }
 
-    ImGui::hotkey("Toggle Key", config.getFeatures().chams.toggleKey, 80.0f);
-    ImGui::hotkey("Hold Key", config.getFeatures().chams.holdKey, 80.0f);
+    ImGui::hotkey("Toggle Key", config->getFeatures().chams.toggleKey, 80.0f);
+    ImGui::hotkey("Hold Key", config->getFeatures().chams.holdKey, 80.0f);
     ImGui::Separator();
 
     static int currentCategory{ 0 };
@@ -464,14 +716,14 @@ void GUI::renderChamsWindow(Config& config, bool contentOnly) noexcept
     ImGui::Text("%d", material);
     ImGui::SameLine();
 
-    if (material >= int(config.getFeatures().chams.chamsMaterials[currentCategory].materials.size()))
+    if (material >= int(config->getFeatures().chams.chamsMaterials[currentCategory].materials.size()))
         ImGuiCustom::arrowButtonDisabled("##right", ImGuiDir_Right);
     else if (ImGui::ArrowButton("##right", ImGuiDir_Right))
         ++material;
 
     ImGui::SameLine();
 
-    auto& chams{ config.getFeatures().chams.chamsMaterials[currentCategory].materials[material - 1] };
+    auto& chams{ config->getFeatures().chams.chamsMaterials[currentCategory].materials[material - 1] };
 
     ImGui::Checkbox("Enabled", &chams.enabled);
     ImGui::Separator();
@@ -495,7 +747,7 @@ void GUI::renderChamsWindow(Config& config, bool contentOnly) noexcept
     }
 }
 
-void GUI::renderStyleWindow(Config& config, bool contentOnly) noexcept
+void GUI::renderStyleWindow(bool contentOnly) noexcept
 {
     if (!contentOnly) {
         if (!window.style)
@@ -505,13 +757,13 @@ void GUI::renderStyleWindow(Config& config, bool contentOnly) noexcept
     }
 
     ImGui::PushItemWidth(150.0f);
-    if (ImGui::Combo("Menu style", &config.style.menuStyle, "Classic\0One window\0"))
+    if (ImGui::Combo("Menu style", &config->style.menuStyle, "Classic\0One window\0"))
         window = { };
-    if (ImGui::Combo("Menu colors", &config.style.menuColors, "Dark\0Light\0Classic\0Custom\0"))
-        updateColors(config);
+    if (ImGui::Combo("Menu colors", &config->style.menuColors, "Dark\0Light\0Classic\0Custom\0"))
+        updateColors();
     ImGui::PopItemWidth();
 
-    if (config.style.menuColors == 3) {
+    if (config->style.menuColors == 3) {
         ImGuiStyle& style = ImGui::GetStyle();
         for (int i = 0; i < ImGuiCol_COUNT; i++) {
             if (i && i & 3) ImGui::SameLine(220.0f * (i & 3));
@@ -524,7 +776,7 @@ void GUI::renderStyleWindow(Config& config, bool contentOnly) noexcept
         ImGui::End();
 }
 
-void GUI::renderConfigWindow(const OtherInterfaces& interfaces, const Memory& memory, Config& config, bool contentOnly) noexcept
+void GUI::renderConfigWindow(const OtherInterfaces& interfaces, const Memory& memory, bool contentOnly) noexcept
 {
     if (!contentOnly) {
         if (!window.config)
@@ -544,14 +796,14 @@ void GUI::renderConfigWindow(const OtherInterfaces& interfaces, const Memory& me
 
     ImGui::PushItemWidth(160.0f);
 
-    auto& configItems = config.getConfigs();
+    auto& configItems = config->getConfigs();
     static int currentConfig = -1;
 
     static std::u8string buffer;
 
     timeToNextConfigRefresh -= ImGui::GetIO().DeltaTime;
     if (timeToNextConfigRefresh <= 0.0f) {
-        config.listConfigs();
+        config->listConfigs();
         if (const auto it = std::find(configItems.begin(), configItems.end(), buffer); it != configItems.end())
             currentConfig = std::distance(configItems.begin(), it);
         timeToNextConfigRefresh = 0.1f;
@@ -570,7 +822,7 @@ void GUI::renderConfigWindow(const OtherInterfaces& interfaces, const Memory& me
         ImGui::PushID(0);
         if (ImGui::InputTextWithHint("", "config name", &buffer, ImGuiInputTextFlags_EnterReturnsTrue)) {
             if (currentConfig != -1)
-                config.rename(currentConfig, buffer);
+                config->rename(currentConfig, buffer);
         }
         ImGui::PopID();
         ImGui::NextColumn();
@@ -578,10 +830,10 @@ void GUI::renderConfigWindow(const OtherInterfaces& interfaces, const Memory& me
         ImGui::PushItemWidth(100.0f);
 
         if (ImGui::Button("Open config directory"))
-            config.openConfigDir();
+            config->openConfigDir();
 
         if (ImGui::Button("Create config", { 100.0f, 25.0f }))
-            config.add(interfaces, memory, buffer.c_str());
+            config->add(interfaces, memory, buffer.c_str());
 
         if (ImGui::Button("Reset config", { 100.0f, 25.0f }))
             ImGui::OpenPopup("Config to reset");
@@ -595,18 +847,18 @@ void GUI::renderConfigWindow(const OtherInterfaces& interfaces, const Memory& me
 
                 if (ImGui::Selectable(names[i])) {
                     switch (i) {
-                    case 0: config.reset(interfaces, memory); updateColors(config); config.getFeatures().misc.updateClanTag(true); config.getFeatures().inventoryChanger.scheduleHudUpdate(); break;
-                    case 1: config.aimbot = { }; break;
-                    case 2: config.triggerbot = { }; break;
-                    case 3: config.getFeatures().backtrack.configure(configurator); break;
-                    case 4: config.getFeatures().glow.resetConfig(); break;
-                    case 5: config.getFeatures().chams.configure(configurator); break;
-                    case 6: config.streamProofESP = { }; break;
-                    case 7: config.getFeatures().visuals.resetConfig(); break;
-                    case 8: config.getFeatures().inventoryChanger.reset(memory); config.getFeatures().inventoryChanger.scheduleHudUpdate(); break;
-                    case 9: config.getFeatures().sound.configure(configurator); break;
-                    case 10: config.style = { }; updateColors(config); break;
-                    case 11: config.getFeatures().misc.resetConfig(); config.getFeatures().misc.updateClanTag(true); break;
+                    case 0: config->reset(interfaces, memory); updateColors(); config->getFeatures().misc.updateClanTag(true); config->getFeatures().inventoryChanger.scheduleHudUpdate(); break;
+                    case 1: config->aimbot = { }; break;
+                    case 2: config->triggerbot = { }; break;
+                    case 3: config->getFeatures().backtrack.configure(configurator); break;
+                    case 4: config->getFeatures().glow.resetConfig(); break;
+                    case 5: config->getFeatures().chams.configure(configurator); break;
+                    case 6: config->streamProofESP = { }; break;
+                    case 7: config->getFeatures().visuals.resetConfig(); break;
+                    case 8: config->getFeatures().inventoryChanger.reset(memory); config->getFeatures().inventoryChanger.scheduleHudUpdate(); break;
+                    case 9: config->getFeatures().sound.configure(configurator); break;
+                    case 10: config->style = { }; updateColors(); break;
+                    case 11: config->getFeatures().misc.resetConfig(); config->getFeatures().misc.updateClanTag(true); break;
                     }
                 }
             }
@@ -614,15 +866,15 @@ void GUI::renderConfigWindow(const OtherInterfaces& interfaces, const Memory& me
         }
         if (currentConfig != -1) {
             if (ImGui::Button("Load selected", { 100.0f, 25.0f })) {
-                config.load(interfaces, memory, currentConfig, incrementalLoad);
-                updateColors(config);
-                config.getFeatures().inventoryChanger.scheduleHudUpdate();
-                config.getFeatures().misc.updateClanTag(true);
+                config->load(interfaces, memory, currentConfig, incrementalLoad);
+                updateColors();
+                config->getFeatures().inventoryChanger.scheduleHudUpdate();
+                config->getFeatures().misc.updateClanTag(true);
             }
             if (ImGui::Button("Save selected", { 100.0f, 25.0f }))
-                config.save(interfaces, memory, currentConfig);
+                config->save(interfaces, memory, currentConfig);
             if (ImGui::Button("Delete selected", { 100.0f, 25.0f })) {
-                config.remove(currentConfig);
+                config->remove(currentConfig);
 
                 if (static_cast<std::size_t>(currentConfig) < configItems.size())
                     buffer = configItems[currentConfig];
@@ -641,17 +893,17 @@ void GUI::renderGuiStyle2(const EngineInterfaces& engineInterfaces, const Client
 
     if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_NoTooltip)) {
         if (ImGui::BeginTabItem("Aimbot")) {
-            renderAimbotWindow(config, true);
+            renderAimbotWindow(true);
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Triggerbot")) {
-            renderTriggerbotWindow(config, true);
+            renderTriggerbotWindow(true);
             ImGui::EndTabItem();
         }
         config.getFeatures().backtrack.tabItem();
         config.getFeatures().glow.tabItem();
         if (ImGui::BeginTabItem("Chams")) {
-            renderChamsWindow(config, true);
+            renderChamsWindow(true);
             ImGui::EndTabItem();
         }
         StreamProofESP::tabItem(config);
@@ -659,12 +911,12 @@ void GUI::renderGuiStyle2(const EngineInterfaces& engineInterfaces, const Client
         config.getFeatures().inventoryChanger.tabItem(memory);
         config.getFeatures().sound.tabItem();
         if (ImGui::BeginTabItem("Style")) {
-            renderStyleWindow(config, true);
+            renderStyleWindow(true);
             ImGui::EndTabItem();
         }
         config.getFeatures().misc.tabItem(config.getFeatures().visuals, config.getFeatures().inventoryChanger, config.getFeatures().glow);
         if (ImGui::BeginTabItem("Config")) {
-            renderConfigWindow(interfaces, memory, config, true);
+            renderConfigWindow(interfaces, memory, true);
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();

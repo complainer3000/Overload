@@ -11,5 +11,5 @@ namespace StreamProofESP
     // GUI
     void menuBarItem() noexcept;
     void tabItem(Config& config) noexcept;
-    void drawGUI(Config& config, bool contentOnly) noexcept;
+    void drawGUI(bool contentOnly) noexcept;
 }
