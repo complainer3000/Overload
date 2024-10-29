@@ -1,3 +1,4 @@
+#include "Hooks.h"
 #include <charconv>
 #include <functional>
 #include <string>
@@ -30,7 +31,6 @@
 #include "EventListener.h"
 #include "GameData.h"
 #include "GUI.h"
-#include "Hooks.h"
 #include "Memory.h"
 
 #include "Hacks/Aimbot.h"

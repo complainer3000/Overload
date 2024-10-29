@@ -131,3 +131,5 @@ public:
 
     const Memory& memory;
 };
+
+inline std::unique_ptr<Hooks> hooks;

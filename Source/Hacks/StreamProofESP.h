@@ -5,8 +5,8 @@
 
 namespace StreamProofESP
 {
-    void render(const Memory& memory, Config& config) noexcept;
-    void updateInput(Config& config) noexcept;
+    void render(const Memory& memory);
+    void updateInput() noexcept;
 
     // GUI
     void menuBarItem() noexcept;

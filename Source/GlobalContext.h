@@ -64,7 +64,6 @@ public:
 #endif
 
     FixedAllocator<10'000> fixedAllocator;
-    std::optional<Hooks> hooks;
     std::optional<EventListener> gameEventListener;
     std::optional<EngineInterfacesPODs> engineInterfacesPODs;
     std::optional<Features> features;

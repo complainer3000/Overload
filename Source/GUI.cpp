@@ -103,10 +103,10 @@ GUI::GUI() noexcept
     addFontFromVFONT("csgo/panorama/fonts/notosanssc-regular.vfont", 17.0f, io.Fonts->GetGlyphRangesChineseFull(), true);
 }
 
-void GUI::render(Hooks& hooks, const EngineInterfaces& engineInterfaces, const ClientInterfaces& clientInterfaces, const OtherInterfaces& interfaces, const Memory& memory, Config& config) noexcept
+void GUI::render(Hooks& hooks, const EngineInterfaces& engineInterfaces, const ClientInterfaces& clientInterfaces, const OtherInterfaces& interfaces, const Memory& memory) noexcept
 {
-    auto& features = config.getFeatures();
-    if (!config.style.menuStyle) {
+    auto& features = config->getFeatures();
+    if (!config->style.menuStyle) {
         renderMenuBar(features);
         renderAimbotWindow();
         renderTriggerbotWindow();
@@ -121,7 +121,7 @@ void GUI::render(Hooks& hooks, const EngineInterfaces& engineInterfaces, const C
         features.misc.drawGUI(features.visuals, features.inventoryChanger, features.glow, false);
         renderConfigWindow(interfaces, memory);
     } else {
-        renderGuiStyle2(engineInterfaces, clientInterfaces, interfaces, memory, config);
+        renderGuiStyle2(engineInterfaces, clientInterfaces, interfaces, memory);
     }
     if (features.misc.unhook) {
         hooks.uninstall(features.misc, features.glow, features.visuals, features.inventoryChanger);
@@ -887,7 +887,7 @@ void GUI::renderConfigWindow(const OtherInterfaces& interfaces, const Memory& me
             ImGui::End();
 }
 
-void GUI::renderGuiStyle2(const EngineInterfaces& engineInterfaces, const ClientInterfaces& clientInterfaces, const OtherInterfaces& interfaces, const Memory& memory, Config& config) noexcept
+void GUI::renderGuiStyle2(const EngineInterfaces& engineInterfaces, const ClientInterfaces& clientInterfaces, const OtherInterfaces& interfaces, const Memory& memory) noexcept
 {
     ImGui::Begin("Osiris", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -900,21 +900,21 @@ void GUI::renderGuiStyle2(const EngineInterfaces& engineInterfaces, const Client
             renderTriggerbotWindow(true);
             ImGui::EndTabItem();
         }
-        config.getFeatures().backtrack.tabItem();
-        config.getFeatures().glow.tabItem();
+        config->getFeatures().backtrack.tabItem();
+        config->getFeatures().glow.tabItem();
         if (ImGui::BeginTabItem("Chams")) {
             renderChamsWindow(true);
             ImGui::EndTabItem();
         }
-        StreamProofESP::tabItem(config);
-        config.getFeatures().visuals.tabItem();
-        config.getFeatures().inventoryChanger.tabItem(memory);
-        config.getFeatures().sound.tabItem();
+        StreamProofESP::tabItem(*config);
+        config->getFeatures().visuals.tabItem();
+        config->getFeatures().inventoryChanger.tabItem(memory);
+        config->getFeatures().sound.tabItem();
         if (ImGui::BeginTabItem("Style")) {
             renderStyleWindow(true);
             ImGui::EndTabItem();
         }
-        config.getFeatures().misc.tabItem(config.getFeatures().visuals, config.getFeatures().inventoryChanger, config.getFeatures().glow);
+        config->getFeatures().misc.tabItem(config->getFeatures().visuals, config->getFeatures().inventoryChanger, config->getFeatures().glow);
         if (ImGui::BeginTabItem("Config")) {
             renderConfigWindow(interfaces, memory, true);
             ImGui::EndTabItem();

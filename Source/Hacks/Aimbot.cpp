@@ -136,11 +136,11 @@ static bool canScan(const EngineInterfaces& engineInterfaces, const OtherInterfa
 
 static bool keyPressed = false;
 
-void Aimbot::updateInput(const Config& config) noexcept
+void Aimbot::updateInput() noexcept
 {
-    if (config.aimbotKeyMode == 0)
-        keyPressed = config.aimbotKey.isDown();
-    if (config.aimbotKeyMode == 1 && config.aimbotKey.isPressed())
+    if (config->aimbotKeyMode == 0)
+        keyPressed = config->aimbotKey.isDown();
+    if (config->aimbotKeyMode == 1 && config->aimbotKey.isPressed())
         keyPressed = !keyPressed;
 }
 

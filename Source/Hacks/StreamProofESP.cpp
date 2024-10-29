@@ -503,12 +503,12 @@ static void renderProjectileEsp(const Memory& memory, const Config& configGlobal
     }
 }
 
-void StreamProofESP::render(const Memory& memory, Config& config) noexcept
+void StreamProofESP::render(const Memory& memory)
 {
-    if (config.streamProofESP.toggleKey.isSet()) {
-        if (!config.streamProofESP.toggleKey.isToggled() && !config.streamProofESP.holdKey.isDown())
+    if (config->streamProofESP.toggleKey.isSet()) {
+        if (!config->streamProofESP.toggleKey.isToggled() && !config->streamProofESP.holdKey.isDown())
             return;
-    } else if (config.streamProofESP.holdKey.isSet() && !config.streamProofESP.holdKey.isDown()) {
+    } else if (config->streamProofESP.holdKey.isSet() && !config->streamProofESP.holdKey.isDown()) {
         return;
     }
 
@@ -517,33 +517,33 @@ void StreamProofESP::render(const Memory& memory, Config& config) noexcept
     GameData::Lock lock;
 
     for (const auto& weapon : GameData::weapons())
-        renderWeaponEsp(memory, config, weapon, config.streamProofESP.weapons[weapon.group], config.streamProofESP.weapons[weapon.name]);
+        renderWeaponEsp(memory, *config, weapon, config->streamProofESP.weapons[weapon.group], config->streamProofESP.weapons[weapon.name]);
 
     for (const auto& entity : GameData::entities())
-        renderEntityEsp(memory, config, entity, config.streamProofESP.otherEntities, entity.name);
+        renderEntityEsp(memory, *config, entity, config->streamProofESP.otherEntities, entity.name);
 
     for (const auto& lootCrate : GameData::lootCrates()) {
         if (lootCrate.name)
-            renderEntityEsp(memory, config, lootCrate, config.streamProofESP.lootCrates, lootCrate.name);
+            renderEntityEsp(memory, *config, lootCrate, config->streamProofESP.lootCrates, lootCrate.name);
     }
 
     for (const auto& projectile : GameData::projectiles())
-        renderProjectileEsp(memory, config, projectile, config.streamProofESP.projectiles["All"], config.streamProofESP.projectiles[projectile.name], projectile.name);
+        renderProjectileEsp(memory, *config, projectile, config->streamProofESP.projectiles["All"], config->streamProofESP.projectiles[projectile.name], projectile.name);
 
     for (const auto& player : GameData::players()) {
         if ((player.dormant && player.fadingAlpha(memory) == 0.0f) || !player.alive || !player.inViewFrustum)
             continue;
 
-        auto& playerConfig = player.enemy ? config.streamProofESP.enemies : config.streamProofESP.allies;
+        auto& playerConfig = player.enemy ? config->streamProofESP.enemies : config->streamProofESP.allies;
 
-        if (!renderPlayerEsp(memory, config, player, playerConfig["All"]))
-            renderPlayerEsp(memory, config, player, playerConfig[player.visible ? "Visible" : "Occluded"]);
+        if (!renderPlayerEsp(memory, *config, player, playerConfig["All"]))
+            renderPlayerEsp(memory, *config, player, playerConfig[player.visible ? "Visible" : "Occluded"]);
     }
 }
 
-void StreamProofESP::updateInput(Config& config) noexcept
+void StreamProofESP::updateInput() noexcept
 {
-    config.streamProofESP.toggleKey.handleToggle();
+    config->streamProofESP.toggleKey.handleToggle();
 }
 
 static bool windowOpen = false;

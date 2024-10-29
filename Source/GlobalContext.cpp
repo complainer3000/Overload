@@ -108,39 +108,39 @@ void GlobalContext::swapWindowHook(SDL_Window* window)
 
 #endif
 
-void GlobalContext::renderFrame()
-{
-    ImGui::NewFrame();
+    void GlobalContext::renderFrame()
+    {
+        ImGui::NewFrame();
 
-    if (const auto& displaySize = ImGui::GetIO().DisplaySize; displaySize.x > 0.0f && displaySize.y > 0.0f) {
-        StreamProofESP::render(*memory, *config);
-        features->misc.purchaseList();
-        features->misc.noscopeCrosshair(ImGui::GetBackgroundDrawList());
-        features->misc.recoilCrosshair(ImGui::GetBackgroundDrawList());
-        features->misc.drawOffscreenEnemies(ImGui::GetBackgroundDrawList());
-        features->misc.drawBombTimer();
-        features->misc.spectatorList();
-        features->visuals.hitMarker(nullptr, ImGui::GetBackgroundDrawList());
-        features->visuals.drawMolotovHull(ImGui::GetBackgroundDrawList());
-        features->misc.watermark();
+        if (const auto& displaySize = ImGui::GetIO().DisplaySize; displaySize.x > 0.0f && displaySize.y > 0.0f) {
+            StreamProofESP::render(*memory);
+            features->misc.purchaseList();
+            features->misc.noscopeCrosshair(ImGui::GetBackgroundDrawList());
+            features->misc.recoilCrosshair(ImGui::GetBackgroundDrawList());
+            features->misc.drawOffscreenEnemies(ImGui::GetBackgroundDrawList());
+            features->misc.drawBombTimer();
+            features->misc.spectatorList();
+            features->visuals.hitMarker(nullptr, ImGui::GetBackgroundDrawList());
+            features->visuals.drawMolotovHull(ImGui::GetBackgroundDrawList());
+            features->misc.watermark();
 
-        features->aimbot.updateInput(*config);
-        features->visuals.updateInput();
-        StreamProofESP::updateInput(*config);
-        features->misc.updateInput();
-        Triggerbot::updateInput(*config);
-        features->chams.updateInput();
-        features->glow.updateInput();
+            features->aimbot.updateInput();
+            features->visuals.updateInput();
+            StreamProofESP::updateInput();
+            features->misc.updateInput();
+            Triggerbot::updateInput();
+            features->chams.updateInput();
+            features->glow.updateInput();
 
-        gui->handleToggle(features->misc, getOtherInterfaces());
+            gui->handleToggle(features->misc, getOtherInterfaces());
 
-        if (gui->isOpen())
-            gui->render(*hooks, getEngineInterfaces(), ClientInterfaces{ retSpoofGadgets->client, *clientInterfaces }, getOtherInterfaces(), *memory, *config);
+            if (gui->isOpen())
+                gui->render(*hooks, getEngineInterfaces(), ClientInterfaces{ retSpoofGadgets->client, *clientInterfaces }, getOtherInterfaces(), *memory);
+        }
+
+        ImGui::EndFrame();
+        ImGui::Render();
     }
-
-    ImGui::EndFrame();
-    ImGui::Render();
-}
 
 void GlobalContext::enable()
 {
@@ -167,7 +167,7 @@ void GlobalContext::initialize()
 
     memory.emplace(ClientPatternFinder{ clientPatternFinder }, EnginePatternFinder{ enginePatternFinder }, std::get<csgo::ClientPOD*>(*clientInterfaces), *retSpoofGadgets);
 
-    hooks.emplace(
+    hooks = std::make_unique<Hooks>(
 #if IS_LINUX()
         pollEvent,
 #endif
@@ -181,6 +181,6 @@ void GlobalContext::initialize()
     config = std::make_unique<Config>(*features, getOtherInterfaces(), *memory);
     features->chams.setModelRenderHooks(&hooks->modelRenderHooks);
 
-    gui.emplace();
+    gui = std::make_unique<GUI>();
     hooks->install();
 }

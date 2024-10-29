@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include "../Memory.h"
+#include "Memory.h"
 
 #include "Chams/ChamsCategory.h"
 #include "Chams/ChamsLayer.h"

@@ -15,7 +15,7 @@ class Misc;
 class GUI {
 public:
     GUI() noexcept;
-    void render(Hooks& hooks, const EngineInterfaces& engineInterfaces, const ClientInterfaces& clientInterfaces, const OtherInterfaces& interfaces, const Memory& memory, Config& config) noexcept;
+    void render(Hooks& hooks, const EngineInterfaces& engineInterfaces, const ClientInterfaces& clientInterfaces, const OtherInterfaces& interfaces, const Memory& memory) noexcept;
     void handleToggle(Misc& misc, const OtherInterfaces& interfaces) noexcept;
     [[nodiscard]] bool isOpen() const noexcept { return open; }
 private:
@@ -29,7 +29,7 @@ private:
     void renderChamsWindow(bool contentOnly = false) noexcept;
     void renderStyleWindow(bool contentOnly = false) noexcept;
     void renderConfigWindow(const OtherInterfaces& interfaces, const Memory& memory, bool contentOnly = false) noexcept;
-    void renderGuiStyle2(const EngineInterfaces& engineInterfaces, const ClientInterfaces& clientInterfaces, const OtherInterfaces& interfaces, const Memory& memory, Config& config) noexcept;
+    void renderGuiStyle2(const EngineInterfaces& engineInterfaces, const ClientInterfaces& clientInterfaces, const OtherInterfaces& interfaces, const Memory& memory) noexcept;
 
     struct {
         bool aimbot = false;
@@ -48,4 +48,4 @@ private:
     float timeToNextConfigRefresh = 0.1f;
 };
 
-inline std::optional<GUI> gui;
+inline std::unique_ptr<GUI> gui;

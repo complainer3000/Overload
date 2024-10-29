@@ -1,5 +1,5 @@
-#include "../Config.h"
-#include "../Memory.h"
+#include "Config.h"
+#include "Memory.h"
 #include <CSGO/EngineTrace.h>
 #include <CSGO/Entity.h>
 #include <CSGO/GlobalVars.h>
@@ -11,7 +11,7 @@
 
 static bool keyPressed;
 
-void Triggerbot::run(const csgo::EngineTrace& engineTrace, const OtherInterfaces& interfaces, const Memory& memory, const Config& config, csgo::UserCmd* cmd) noexcept
+void Triggerbot::run(const csgo::EngineTrace& engineTrace, const OtherInterfaces& interfaces, const Memory& memory, csgo::UserCmd* cmd) noexcept
 {
     if (!localPlayer || !localPlayer.get().isAlive() || localPlayer.get().nextAttack() > memory.globalVars->serverTime() || localPlayer.get().isDefusing() || localPlayer.get().waitForNoAttack())
         return;
@@ -27,13 +27,13 @@ void Triggerbot::run(const csgo::EngineTrace& engineTrace, const OtherInterfaces
     if (!weaponIndex)
         return;
 
-    if (!config.triggerbot[weaponIndex].enabled)
+    if (!config->triggerbot[weaponIndex].enabled)
         weaponIndex = getWeaponClass(activeWeapon.itemDefinitionIndex());
 
-    if (!config.triggerbot[weaponIndex].enabled)
+    if (!config->triggerbot[weaponIndex].enabled)
         weaponIndex = 0;
 
-    const auto& cfg = config.triggerbot[weaponIndex];
+    const auto& cfg = config->triggerbot[weaponIndex];
 
     if (!cfg.enabled)
         return;
@@ -43,7 +43,7 @@ void Triggerbot::run(const csgo::EngineTrace& engineTrace, const OtherInterfaces
 
     const auto now = memory.globalVars->realtime;
 
-    if (now - lastContact < config.triggerbot[weaponIndex].burstTime) {
+    if (now - lastContact < config->triggerbot[weaponIndex].burstTime) {
         cmd->buttons |= csgo::UserCmd::IN_ATTACK;
         return;
     }
@@ -101,7 +101,7 @@ void Triggerbot::run(const csgo::EngineTrace& engineTrace, const OtherInterfaces
     }
 }
 
-void Triggerbot::updateInput(const Config& config) noexcept
+void Triggerbot::updateInput() noexcept
 {
-    keyPressed = !config.triggerbotHoldKey.isSet() || config.triggerbotHoldKey.isDown();
+    keyPressed = !config->triggerbotHoldKey.isSet() || config->triggerbotHoldKey.isDown();
 }
