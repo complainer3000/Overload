@@ -4,6 +4,11 @@ project(Osiris)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Ensure 32-bit compilation
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "This project is configured to build as a 32-bit application. Please specify a 32-bit generator (e.g., -A Win32 for MSVC).")
+endif()
+
 if(MSVC)
     set(MSVC_COMMON_FLAGS 
         /nologo     # Don't show version info
@@ -13,7 +18,7 @@ if(MSVC)
         /GF         # Eliminate Duplicate Strings
         /Gy         # Enable function level linking
         /utf-8      # Set source and execution charset to utf-8
-        /Wv:18      # Disable warnings until SDK depedencies switch to UTF-8/ASCII.
+        /Wv:18      # Disable warnings until SDK dependencies switch to UTF-8/ASCII.
         /MP         # Build with multiple processes
         /bigobj     # Allow larger .obj files
         /GL         # Enable Whole Program Optimization
@@ -29,7 +34,7 @@ if(MSVC)
     # Convert the list to a space-separated string
     string(REPLACE ";" " " MSVC_COMMON_FLAGS_STR "${MSVC_COMMON_FLAGS}")
 
-    # Set the flags for different build types
+    # Apply the flags for MSVC
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MSVC_COMMON_FLAGS_STR}")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${MSVC_COMMON_FLAGS_STR}")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${MSVC_COMMON_FLAGS_STR}")
@@ -37,6 +42,12 @@ if(MSVC)
     # Additional MSVC-specific settings
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
     set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /LTCG")
+else()
+    # Set 32-bit flags for GCC/Clang on Linux
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -m32")
 endif()
 
 # Generate compile_commands.json
@@ -50,4 +61,5 @@ option(BUILD_TESTS "Build unit tests" OFF)
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(Tests)
+    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_OPTIONS "-m32" LINK_FLAGS "-m32")
 endif()
