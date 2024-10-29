@@ -83,13 +83,7 @@ float Backtrack::getLerp() noexcept
 
 void Backtrack::run(const ClientInterfaces& clientInterfaces, const EngineInterfaces& engineInterfaces, const OtherInterfaces& interfaces, const Memory& memory, csgo::UserCmd* cmd) noexcept
 {
-    if (!enabled)
-        return;
-
-    if (!(cmd->buttons & csgo::UserCmd::IN_ATTACK))
-        return;
-
-    if (!localPlayer)
+    if (!enabled && !(cmd->buttons & csgo::UserCmd::IN_ATTACK) && !localPlayer)
         return;
 
     auto localPlayerEyePosition = localPlayer.get().getEyePosition();
@@ -108,9 +102,9 @@ void Backtrack::run(const ClientInterfaces& clientInterfaces, const EngineInterf
             || !entity.isOtherEnemy(memory, localPlayer.get()))
             continue;
 
-        const auto& origin = entity.getAbsOrigin();
+        auto origin = entity.getAbsOrigin();
 
-        auto angle = Aimbot::calculateRelativeAngle(localPlayerEyePosition, origin, cmd->viewangles + (recoilBasedFov ? aimPunch : csgo::Vector{ }));
+        auto angle = Aimbot::calculateRelativeAngle(localPlayerEyePosition, origin, cmd->viewangles + (recoilBasedFov ? aimPunch : csgo::Vector{}));
         auto fov = std::hypotf(angle.x, angle.y);
         if (fov < bestFov) {
             bestFov = fov;
@@ -127,7 +121,7 @@ void Backtrack::run(const ClientInterfaces& clientInterfaces, const EngineInterf
         bestFov = 255.f;
 
         for (size_t i = 0; i < records[bestTargetIndex].size(); i++) {
-            const auto& record = records[bestTargetIndex][i];
+            auto& record = records[bestTargetIndex][i];
             if (!valid(engineInterfaces.getEngine(), memory, record.simulationTime))
                 continue;
 
